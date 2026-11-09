@@ -125,7 +125,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 
 .empty{grid-column:1/-1;text-align:center;padding:80px 20px;font-family:'Bungee',sans-serif;font-size:16px;color:#666;background:var(--white);border:3px dashed var(--ink);box-shadow:var(--shadow)}
 
-/* MODAL */
+/* MODAL DETAIL */
 .modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(17,17,17,.8);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:.25s;overflow-y:auto}
 .modal-overlay.open{opacity:1;pointer-events:auto}
 .modal{width:min(780px,100%);background:var(--paper);border:4px solid var(--ink);box-shadow:14px 14px 0 var(--ink);transform:translateY(30px) rotate(-3deg);transition:.3s cubic-bezier(.2,1.2,.4,1);position:relative;margin:auto;max-height:92vh;overflow-y:auto}
@@ -169,6 +169,18 @@ body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',system
 
 .modal-actions{display:flex;gap:12px;flex-wrap:wrap;padding-top:20px;border-top:3px dashed rgba(17,17,17,.2)}
 
+/* ================= VIDEO PLAYER MODAL ================= */
+.video-modal-overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.95);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:.3s}
+.video-modal-overlay.open{opacity:1;pointer-events:auto}
+.video-box{width:min(1000px,100%);background:#000;border:4px solid var(--yellow);box-shadow:10px 10px 0 var(--red);position:relative;transform:scale(.95);transition:.3s cubic-bezier(.2,1.2,.4,1)}
+.video-modal-overlay.open .video-box{transform:scale(1)}
+.video-header{background:var(--ink);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--yellow)}
+.video-title{font-family:'Bungee',sans-serif;color:var(--white);font-size:14px;letter-spacing:.05em}
+.video-close{background:var(--red);color:var(--white);border:2px solid var(--yellow);font-family:'Bungee',sans-serif;font-size:16px;width:32px;height:32px;cursor:pointer;display:grid;place-items:center;transition:.15s}
+.video-close:hover{background:#ff5c6b;transform:rotate(90deg)}
+.video-container{position:relative;padding-bottom:56.25%;height:0;background:#000}
+.video-container iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
+
 /* FOOTER */
 footer{background:var(--ink);color:var(--paper);padding:56px 5vw 40px;border-top:4px solid var(--ink);position:relative;overflow:hidden}
 footer::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,225,77,.06) 1.4px,transparent 1.4px);background-size:8px 8px;pointer-events:none}
@@ -183,7 +195,7 @@ footer::before{content:'';position:absolute;inset:0;background-image:radial-grad
 .footer-bottom{position:relative;margin-top:48px;padding-top:22px;border-top:2px dashed rgba(255,255,255,.15);font-size:12px;color:#888;font-family:'Bungee',sans-serif;letter-spacing:.05em}
 
 /* TOAST */
-.toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,100px);background:var(--yellow);color:var(--ink);font-family:'Bungee',sans-serif;font-size:13px;letter-spacing:.05em;padding:14px 24px 11px;border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);z-index:300;opacity:0;transition:.3s cubic-bezier(.2,1.2,.4,1);white-space:nowrap}
+.toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,100px);background:var(--yellow);color:var(--ink);font-family:'Bungee',sans-serif;font-size:13px;letter-spacing:.05em;padding:14px 24px 11px;border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);z-index:400;opacity:0;transition:.3s cubic-bezier(.2,1.2,.4,1);white-space:nowrap}
 .toast.show{transform:translate(-50%,0);opacity:1}
 
 @media(max-width:860px){
@@ -203,6 +215,7 @@ footer::before{content:'';position:absolute;inset:0;background-image:radial-grad
 .footer-bottom{text-align:center}
 .modal-bg{height:180px}
 .sort-bar{padding:12px 14px}
+.video-box{border-width:2px;box-shadow:5px 5px 0 var(--red)}
 }
 @media(max-width:480px){
 .topbar{padding:14px 5vw 12px;gap:16px}
@@ -302,6 +315,7 @@ footer::before{content:'';position:absolute;inset:0;background-image:radial-grad
   <div class="footer-bottom">© 2025 Rx! STUDIO — SEMUA HAK DILINDUNGI</div>
 </footer>
 
+<!-- MODAL DETAIL -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="modal-bg" id="mBg">
@@ -330,9 +344,23 @@ footer::before{content:'';position:absolute;inset:0;background-image:radial-grad
         <div class="similar-grid" id="mSimilar"></div>
       </div>
       <div class="modal-actions">
-        <button class="btn primary" onclick="toast('▶ Memutar film...')">▶ TONTON SEKARANG</button>
+        <!-- TOMBOL TONTON SEKARANG YANG MEMICU VIDEO PLAYER -->
+        <button class="btn primary" id="mWatchBtn">▶ TONTON SEKARANG</button>
         <button class="btn" onclick="toast('Ditambah ke daftar gue ✓')">＋ DAFTAR GUE</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VIDEO PLAYER (BARU) -->
+<div class="video-modal-overlay" id="videoModal" onclick="if(event.target===this)closeVideo()">
+  <div class="video-box">
+    <div class="video-header">
+      <span class="video-title" id="videoTitle">MEMUTAR FILM...</span>
+      <button class="video-close" onclick="closeVideo()">✕</button>
+    </div>
+    <div class="video-container">
+      <iframe id="videoIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </div>
   </div>
 </div>
@@ -384,7 +412,6 @@ function setHero(id, animate){
   const stEl = document.getElementById('heroStickerRating');
   const watchBtn = document.getElementById('heroWatchBtn');
 
-  // Split title ke max 3 kata
   const words = m.title.split(' ');
   tEl.innerHTML = words.slice(0,3).map((w,i)=>`<span class="w${i+1}">${w.toUpperCase()}</span>`).join('');
 
@@ -400,7 +427,9 @@ function setHero(id, animate){
   pEl.style.backgroundImage = `url('${aiImg(m.img, 800, 1100, m.id)}')`;
   tagEl.textContent = `EDISI #0${(heroIndex+1)}`;
   stEl.textContent = `★ ${m.rating}`;
-  watchBtn.onclick = () => openModal(m.id);
+  
+  // Update Watch Button to open Player
+  watchBtn.onclick = () => playVideo(m.id);
 
   document.querySelectorAll('.hero-dot').forEach((d,i)=>{
     d.classList.toggle('active', i === heroIndex);
@@ -459,7 +488,7 @@ function render(){
         <span class="card-rating">★ ${m.rating}</span>
         <div class="card-overlay">
           <p>${m.synopsis}</p>
-          <button class="mini-play" onclick="event.stopPropagation();openModal(${m.id})">▶ TONTON</button>
+          <button class="mini-play" onclick="event.stopPropagation();playVideo(${m.id})">▶ TONTON</button>
         </div>
       </div>
       <div class="card-body">
@@ -483,18 +512,15 @@ function setGenre(g){ activeGenre = g; renderChips(); render(); }
 document.getElementById('search').addEventListener('input', e=>{ query = e.target.value; render(); });
 document.getElementById('sortBy').addEventListener('change', e=>{ sortBy = e.target.value; render(); });
 
-/* ===== MODAL ===== */
+/* ===== MODAL DETAIL ===== */
 function openModal(id){
   const m = movies.find(x=>x.id===id); if(!m) return;
   document.getElementById('mBg').style.backgroundImage = `url('${aiImg(m.img, 1200, 600, m.id)}')`;
   document.getElementById('mTitle').textContent = m.title.toUpperCase();
 
-  // Rating stars
   document.getElementById('mStars').innerHTML = renderStars(m.rating);
   document.getElementById('mRating').textContent = m.rating.toFixed(1);
-  document.getElementById('mRatingCount').textContent = '/ 10';
-
-  // Info grid
+  
   document.getElementById('mInfo').innerHTML = `
     <div class="info-item"><span class="info-label">TAHUN</span><span class="info-val">${m.year}</span></div>
     <div class="info-item"><span class="info-label">GENRE</span><span class="info-val">${m.genre}</span></div>
@@ -504,7 +530,6 @@ function openModal(id){
 
   document.getElementById('mSyn').textContent = m.synopsis;
 
-  // Film serupa: same genre, exclude current, max 3
   const similar = movies.filter(x => x.id !== m.id && x.genre === m.genre).slice(0, 3);
   document.getElementById('mSimilarCount').textContent = `DARI GENRE ${m.genre.toUpperCase()}`;
   if(similar.length){
@@ -518,6 +543,12 @@ function openModal(id){
     document.querySelector('.similar-section').style.display = 'none';
   }
 
+  // Set tombol Tonton di Modal biar buka Video Player
+  document.getElementById('mWatchBtn').onclick = () => {
+    closeModal();
+    playVideo(m.id);
+  };
+
   document.getElementById('modal').classList.add('open');
   document.body.style.overflow = 'hidden';
   document.querySelector('.modal').scrollTop = 0;
@@ -527,7 +558,33 @@ function closeModal(){
   document.getElementById('modal').classList.remove('open');
   document.body.style.overflow = '';
 }
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+/* ===== VIDEO PLAYER MODAL ===== */
+function playVideo(id){
+  const m = movies.find(x=>x.id===id); if(!m) return;
+  
+  // Kasih fallback kalau data.js lama belum ada field "video"
+  const videoUrl = m.video || "https://www.youtube.com/embed/5qap5aO4i9A";
+  
+  document.getElementById('videoTitle').textContent = `MEMUTAR: ${m.title.toUpperCase()}`;
+  document.getElementById('videoIframe').src = videoUrl;
+  
+  document.getElementById('videoModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeVideo(){
+  document.getElementById('videoModal').classList.remove('open');
+  document.getElementById('videoIframe').src = ""; // Stop video saat ditutup
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e=>{ 
+  if(e.key==='Escape') {
+    closeModal();
+    closeVideo();
+  }
+});
 
 let toastTimer;
 function toast(msg){
